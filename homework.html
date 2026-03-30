@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Waiting Room</title>
+		<style>
+			:root {
+				--c1: #8fa6d8;
+				--c2: #040405;
+				--c3: #885c7c;
+				--c4: #4c747c;
+			}
+
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				min-height: 100vh;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+				color: #f7f7ff;
+				background: radial-gradient(circle at top left, var(--c1), var(--c3)),
+					radial-gradient(circle at bottom right, var(--c4), var(--c2));
+				background-blend-mode: screen, normal;
+			}
+
+			.main {
+				position: relative;
+				z-index: 1;
+				width: min(420px, 100% - 3rem);
+				padding: 2.25rem 2rem 2.5rem;
+				border-radius: 28px;
+				background: linear-gradient(145deg, rgba(4, 4, 5, 0.94), rgba(16, 24, 40, 0.94));
+				box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 1.8rem;
+			}
+
+			.clock-shell {
+				position: relative;
+				width: min(220px, 70vw);
+				aspect-ratio: 1 / 1;
+				border-radius: 50%;
+				background: conic-gradient(
+					from 220deg,
+					rgba(143, 166, 216, 0.18),
+					rgba(136, 92, 124, 0.8),
+					rgba(76, 116, 124, 0.5),
+					rgba(4, 4, 5, 0.9)
+				);
+				padding: 10px;
+				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+			}
+
+			.clock-inner {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				border-radius: 50%;
+				background: radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.2), transparent 55%),
+					radial-gradient(circle at 80% 100%, rgba(0, 0, 0, 0.7), rgba(4, 4, 5, 1));
+				border: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				overflow: hidden;
+			}
+
+			.tick-ring {
+				position: absolute;
+				inset: 13%;
+				border-radius: 50%;
+				border: none;
+				box-shadow: none;
+			}
+
+			.tick {
+				position: absolute;
+				width: 2px;
+				height: 11%;
+				background: none;
+				top: 6%;
+				left: 50%;
+				transform-origin: 50% 400%;
+				opacity: 0;
+			}
+
+			.tick.major {
+				width: 3px;
+				height: 15%;
+				opacity: 0;
+				background: none;
+			}
+
+			.center-cap {
+				display: none;
+			}
+
+			.hand {
+				position: absolute;
+				width: 4px;
+				height: 38%;
+				background: linear-gradient(to bottom, #f97316, #facc15);
+				top: 18%;
+				left: 50%;
+				transform-origin: 50% 82%;
+				border-radius: 999px;
+				box-shadow: 0 0 18px rgba(248, 250, 252, 0.7);
+			}
+
+			.hand-shadow {
+				position: absolute;
+				width: 6px;
+				height: 38%;
+				background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), transparent);
+				top: 20%;
+				left: 50%;
+				transform-origin: 50% 82%;
+				border-radius: 999px;
+				filter: blur(3px);
+				opacity: 0.6;
+			}
+
+			.time-readout {
+				position: relative;
+				z-index: 2;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 0.25rem;
+			}
+
+			.time-digits {
+				display: inline-flex;
+				align-items: baseline;
+				gap: 0.35rem;
+			}
+
+			.time-part {
+				min-width: 3.2ch;
+				padding: 0.18rem 0.35rem;
+				border-radius: 10px;
+				background: radial-gradient(circle at 20% 0%, rgba(15, 23, 42, 0.15), transparent 55%),
+					rgba(15, 23, 42, 0.8);
+				border: 1px solid rgba(148, 163, 255, 0.55);
+				box-shadow: 0 0 18px rgba(129, 140, 248, 0.5);
+				font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+				font-size: 1.7rem;
+				font-weight: 600;
+				letter-spacing: 0.09em;
+			}
+
+			.time-colon {
+				font-size: 1.4rem;
+				opacity: 0.85;
+			}
+
+			.caption {
+				font-size: 1.3rem;
+				font-weight: 700;
+				letter-spacing: 0.18em;
+				text-transform: uppercase;
+				color: rgba(248, 250, 252, 0.98);
+				text-align: center;
+				text-shadow: 0 0 8px rgba(129, 140, 248, 0.9), 0 0 16px rgba(56, 189, 248, 0.9);
+				animation: caption-glow 1.6s ease-in-out infinite alternate;
+			}
+
+			@keyframes caption-glow {
+				0% {
+					text-shadow: 0 0 4px rgba(129, 140, 248, 0.5), 0 0 10px rgba(56, 189, 248, 0.5);
+					transform: translateY(0);
+				}
+				50% {
+					text-shadow: 0 0 10px rgba(129, 140, 248, 1), 0 0 22px rgba(56, 189, 248, 1), 0 0 30px rgba(251, 191, 36, 0.9);
+					transform: translateY(-1px);
+				}
+				100% {
+					text-shadow: 0 0 6px rgba(129, 140, 248, 0.7), 0 0 16px rgba(56, 189, 248, 0.7);
+					transform: translateY(0);
+				}
+			}
+
+			.gif-wrapper {
+				width: 100%;
+				border-radius: 18px;
+				overflow: hidden;
+				border: 1px solid rgba(148, 163, 255, 0.55);
+				background: radial-gradient(circle at 0% 0%, rgba(143, 166, 216, 0.4), transparent 60%),
+					radial-gradient(circle at 100% 100%, rgba(4, 4, 5, 0.95), rgba(4, 4, 5, 1));
+				box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+			}
+
+			.gif-wrapper img {
+				display: block;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+			}
+
+			.message {
+				font-size: 1rem;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				text-align: center;
+				color: rgba(226, 232, 255, 0.96);
+			}
+		</style>
+	</head>
+	<body>
+		<main class="main">
+			<div class="clock-shell" aria-hidden="true">
+				<div class="clock-inner">
+					<div class="tick-ring"></div>
+					<div class="hand-shadow" id="hand-shadow"></div>
+					<div class="hand" id="hand"></div>
+					<div class="center-cap"></div>
+					<div class="time-readout">
+						<div class="time-digits" id="time-digits">
+							<span class="time-part" id="mm">--</span>
+							<span class="time-colon">:</span>
+							<span class="time-part" id="ss">--</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<p class="caption">2026/06/30 in Taipei</p>
+			<div class="gif-wrapper">
+				<img id="main-image" src="nmmixSign.gif" alt="Waiting room image" />
+			</div>
+			<p class="message">We are waiting for you</p>
+		</main>
+
+		<script>
+			// Simple countdown configuration (in seconds)
+			var TOTAL_SECONDS = 8; // 8-second countdown
+
+			var mmEl = document.getElementById("mm");
+			var ssEl = document.getElementById("ss");
+			var hand = document.getElementById("hand");
+			var handShadow = document.getElementById("hand-shadow");
+			var clockInner = document.querySelector(".clock-inner");
+
+			// build the mechanical tick marks around the dial
+			(function createTicks() {
+				if (!clockInner) return;
+				var fragment = document.createDocumentFragment();
+				for (var i = 0; i < 60; i++) {
+					var tick = document.createElement("div");
+					if (i % 5 === 0) {
+						tick.className = "tick major";
+					} else {
+						tick.className = "tick";
+					}
+					var angle = i * 6; // 360 / 60
+					tick.style.transform = "translateX(-50%) rotate(" + angle + "deg)";
+					fragment.appendChild(tick);
+				}
+				clockInner.insertBefore(fragment, clockInner.firstChild);
+			})();
+
+			function pad2(num) {
+				return (num < 10 ? "0" : "") + num;
+			}
+
+			function formatTime(totalSeconds) {
+				var minutes = Math.floor(totalSeconds / 60);
+				var seconds = totalSeconds % 60;
+				return {
+					mm: pad2(minutes),
+					ss: pad2(seconds),
+				};
+			}
+
+			function updateDigits(remaining) {
+				var t = formatTime(remaining);
+				mmEl.textContent = t.mm;
+				ssEl.textContent = t.ss;
+			}
+
+			function updateHand(remaining) {
+				var progress = 1 - remaining / TOTAL_SECONDS;
+				if (progress < 0) progress = 0;
+				if (progress > 1) progress = 1;
+				var angle = 360 * progress;
+				var baseRotation = -90;
+				var finalRotation = baseRotation + angle;
+				var transform = "translateX(-50%) rotate(" + finalRotation + "deg)";
+				hand.style.transform = transform;
+				handShadow.style.transform = transform;
+			}
+
+			var remaining = TOTAL_SECONDS;
+			updateDigits(remaining);
+			updateHand(remaining);
+
+			var countdownIntervalId = setInterval(function () {
+				remaining -= 1;
+				if (remaining < 0) {
+					remaining = 0;
+				}
+				updateDigits(remaining);
+				updateHand(remaining);
+
+				if (remaining === 0) {
+					clearInterval(countdownIntervalId);
+				}
+			}, 1000);
+
+			// Image swap on click: show a random member for 4 seconds
+			var baseImageSrc = "nmmixSign.gif";
+			var baseCaptionText = "We are waiting for you";
+			var memberImages = [
+				{ name: "Bae", src: "Bae.jpg" },
+				{ name: "Haewon", src: "Haewon.jpg" },
+				{ name: "Jiwoo", src: "Jiwoo.jpg" },
+				{ name: "Kyujin", src: "Kyujin.jpg" },
+				{ name: "Lily", src: "lily.jpg" },
+				{ name: "Sullyoon", src: "Sullyoon.jpg" },
+			];
+
+			var imageEl = document.getElementById("main-image");
+			var messageEl = document.querySelector(".message");
+			var gifWrapper = document.querySelector(".gif-wrapper");
+			var resetTimeoutId = null;
+
+			// Lock the wrapper to the original nmmix_static aspect ratio only
+			var baseImgWidth = null;
+			var baseImgHeight = null;
+
+			function setWrapperAspectRatioFromBase() {
+				if (!gifWrapper) return;
+				if (!baseImgWidth || !baseImgHeight) return;
+				gifWrapper.style.aspectRatio = baseImgWidth + " / " + baseImgHeight;
+			}
+
+			if (imageEl) {
+				function initBaseDimensions() {
+					if (!imageEl.naturalWidth || !imageEl.naturalHeight) return;
+					if (baseImgWidth && baseImgHeight) return; // already set
+					baseImgWidth = imageEl.naturalWidth;
+					baseImgHeight = imageEl.naturalHeight;
+					setWrapperAspectRatioFromBase();
+				}
+
+				if (imageEl.complete) {
+					initBaseDimensions();
+				} else {
+					imageEl.addEventListener("load", function handleFirstLoad() {
+						initBaseDimensions();
+						imageEl.removeEventListener("load", handleFirstLoad);
+					});
+				}
+			}
+
+			if (gifWrapper && imageEl && messageEl && memberImages.length) {
+				gifWrapper.addEventListener("click", function () {
+					if (resetTimeoutId !== null) {
+						clearTimeout(resetTimeoutId);
+					}
+
+					var index = Math.floor(Math.random() * memberImages.length);
+					var member = memberImages[index];
+
+					imageEl.src = member.src;
+					imageEl.alt = member.name + " - waiting";
+					messageEl.textContent = "Please wait for us !";
+
+					resetTimeoutId = setTimeout(function () {
+						imageEl.src = baseImageSrc;
+						imageEl.alt = "Waiting room image";
+						messageEl.textContent = baseCaptionText;
+						resetTimeoutId = null;
+					}, 4000);
+				});
+			}
+		</script>
+	</body>
+</html>
