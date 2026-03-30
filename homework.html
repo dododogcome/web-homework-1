@@ -233,7 +233,7 @@
 		</style>
 	</head>
 	<body>
-		<div class="ticket-status">tickets left :</div>
+		<div class="ticket-status">tickets left : <span id="tickets-left-value"></span></div>
 		<main class="main">
 			<div class="clock-shell" aria-hidden="true">
 				<div class="clock-inner">
@@ -258,6 +258,16 @@
 		</main>
 
 		<script>
+			// Random tickets left between 100 and 10000
+			(function () {
+				var span = document.getElementById("tickets-left-value");
+				if (!span) return;
+				var min = 100;
+				var max = 10000;
+				var value = Math.floor(Math.random() * (max - min + 1)) + min;
+				span.textContent = value;
+			})();
+
 			// Simple countdown configuration (in seconds)
 			var TOTAL_SECONDS = 8; // 8-second countdown
 
